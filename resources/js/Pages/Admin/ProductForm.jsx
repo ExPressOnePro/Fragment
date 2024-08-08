@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Navbar from '../../Components/Navbar';
 
@@ -10,6 +10,18 @@ export default function ProductForm({ product = {} }) {
     const [image, setImage] = useState(null);
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
+    const [categories, setCategories] = useState([]);
+
+    useEffect(() => {
+        // Fetch categories for the dropdown
+        axios.get('/api/admin/categories')
+            .then(response => {
+                setCategories(response.data.categories);
+            })
+            .catch(error => {
+                console.error('Error fetching categories:', error.response?.data || error.message);
+            });
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -97,14 +109,20 @@ export default function ProductForm({ product = {} }) {
                     </div>
                     <div>
                         <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
-                        <input
+                        <select
                             id="category"
-                            type="text"
                             value={categoryId}
                             onChange={(e) => setCategoryId(e.target.value)}
                             required
                             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
-                        />
+                        >
+                            <option value="" disabled>Select a category</option>
+                            {categories.map(category => (
+                                <option key={category.id} value={category.id}>
+                                    {category.name}
+                                </option>
+                            ))}
+                        </select>
                         {errors.category_id && <p className="text-red-600 text-sm">{errors.category_id}</p>}
                     </div>
                     <div>

@@ -5,6 +5,7 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Head, Link, useForm } from '@inertiajs/react';
+import axios from "axios";
 
 export default function Register() {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -20,10 +21,22 @@ export default function Register() {
         };
     }, []);
 
-    const submit = (e) => {
+    const submit = async (e) => {
         e.preventDefault();
 
-        post(route('register'));
+        try {
+            // Отправка POST-запроса на сервер
+            const response = await axios.post('/register', data);
+
+            // Если токен присутствует в ответе, сохраняем его и перезагружаем страницу
+            if (response.data.token) {
+                localStorage.setItem('token', response.data.token);
+                window.location.reload();
+            }
+        } catch (error) {
+            // Обработка ошибок
+            console.error('Registration failed:', error.response ? error.response.data : error.message);
+        }
     };
 
     return (

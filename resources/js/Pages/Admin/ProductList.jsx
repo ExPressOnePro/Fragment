@@ -6,16 +6,34 @@ import Navbar from '../../Components/Navbar';
 export default function ProductList( {auth} ) {
     const [products, setProducts] = useState([]);
 
-    useEffect(() => {
-        axios.get('/api/admin/products').then(response => {
-            setProducts(response.data.products);
-        });
-    }, []);
+    // useEffect(() => {
+    //     axios.get('/api/admin/products')
+    //         .then(response => {
+    //             setProducts(response.data.products);
+    //         })
+    //         .catch(error => {
+    //             console.error('Error fetching products:', error);
+    //             setError('An error occurred while fetching products.');
+    //
+    //             // Логирование ошибки на сервер
+    //             axios.post('/api/logs', { error: error.message });
+    //         });
+    // }, []);
 
     const deleteProduct = (id) => {
-        axios.delete(`/api/admin/products/${id}`).then(() => {
-            setProducts(products.filter(product => product.id !== id));
-        });
+        axios.delete(`/api/admin/products/${id}`)
+            .then(() => {
+                // Удаление продукта из списка
+                setProducts(products.filter(product => product.id !== id));
+            })
+            .catch(error => {
+                // Логирование ошибки на сервер
+                console.error('Error deleting product:', error);
+                setError('An error occurred while deleting the product.');
+
+                // Отправка ошибки на сервер
+                axios.post('/api/logs', { error: error.message });
+            });
     };
 
     return (
@@ -23,7 +41,7 @@ export default function ProductList( {auth} ) {
             <Navbar  user={auth.user}/>
             <div className="container mx-auto p-6">
                 <h2 className="text-3xl font-bold mb-6 text-gray-800">Product List</h2>
-                <Link href="/admin/products/create" className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <Link href={route('admin.products.create')} className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     Add New Product
                 </Link>
                 <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
