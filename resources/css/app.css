@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+.truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.group-hover\:opacity-100 {
+    transition: opacity 0.3s;
+    opacity: 1;
+}
+
+.group:hover .group-hover\:opacity-100 {
+    opacity: 1;
+}
