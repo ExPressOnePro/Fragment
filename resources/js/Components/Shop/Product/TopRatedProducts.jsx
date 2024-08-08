@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import ProductCard from './ProductCard.jsx';
+import ProductCard from "@/Components/Shop/Product/ProductCard.jsx";
+
 
 export default function TopRatedProducts() {
     const [topRatedProducts, setTopRatedProducts] = useState([]);

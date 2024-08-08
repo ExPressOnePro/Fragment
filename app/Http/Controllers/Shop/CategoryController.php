@@ -14,6 +14,23 @@ class CategoryController extends Controller
         return response()->json(['categories' => $categories]);
     }
 
+    public function create()
+    {
+        return inertia('Admin/Categories/Create');
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $category = Category::create([
+            'name' => $request->name,
+        ]);
+
+        return response()->json(['category' => $category], 201);
+    }
 }
 
 

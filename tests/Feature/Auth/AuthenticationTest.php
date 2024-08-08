@@ -20,15 +20,29 @@ class AuthenticationTest extends TestCase
 
     public function test_users_can_authenticate_using_the_login_screen(): void
     {
-        $user = User::factory()->create();
-
-        $response = $this->post('/login', [
-            'email' => $user->email,
-            'password' => 'password',
+        $user = User::factory()->create([
+            'password' => bcrypt($password = 'password'),
         ]);
 
-        $this->assertAuthenticated();
-        $response->assertRedirect(RouteServiceProvider::HOME);
+        // Выполняем запрос на аутентификацию
+        $response = $this->postJson('/api/login', [
+            'email' => $user->email,
+            'password' => $password,
+        ]);
+
+        // Проверяем, что токен получен и статус ответа правильный
+        $response->assertStatus(200)
+            ->assertJsonStructure(['token', 'redirect']);
+
+        // Извлекаем токен из ответа
+        $token = $response->json('token');
+
+        // Проверяем аутентификацию с использованием JWT
+        $this->withHeader('Authorization', "Bearer {$token}");
+        $this->get('/api/products')
+        ->assertStatus(200);
+
+        $this->assertAuthenticatedAs($user);
     }
 
     public function test_users_can_not_authenticate_with_invalid_password(): void
@@ -43,13 +57,35 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
     }
 
-    public function test_users_can_logout(): void
+    public function test_users_can_logout_using_jwt(): void
     {
-        $user = User::factory()->create();
+        // Создание пользователя
+        $user = User::factory()->create([
+            'password' => bcrypt($password = 'password'),
+        ]);
 
-        $response = $this->actingAs($user)->post('/logout');
+        // Вход пользователя и получение JWT токена
+        $response = $this->postJson('/api/login', [
+            'email' => $user->email,
+            'password' => $password,
+        ]);
 
-        $this->assertGuest();
-        $response->assertRedirect('/');
+        // Извлечение токена из ответа
+        $token = $response->json('token');
+
+        // Выполнение запроса для выхода
+        $logoutResponse = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->post('/api/logout');
+
+        // Проверка, что выход успешен
+        $logoutResponse->assertStatus(200)
+            ->assertJson(['message' => 'Logged out successfully']);
+
+        // Попробуйте выполнить защищённый запрос и проверьте, что он возвращает 401
+        $protectedResponse = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->get('/api/products');
+
+        // Проверка, что запрос возвращает статус 401, так как токен больше не действителен
+        $protectedResponse->assertStatus(401);
     }
 }

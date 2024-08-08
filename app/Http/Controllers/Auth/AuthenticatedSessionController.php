@@ -62,12 +62,32 @@ class AuthenticatedSessionController extends Controller
             return response()->json(['error' => 'Could not create token'], 500);
         }
     }
+
     /**
      * Destroy an authenticated session.
      */
-    public function destroy(Request $request)
+    public function destroy(Request $request): JsonResponse
     {
-        Auth::logout();
 
+        $token = $request->bearerToken();
+
+        if (!$token) {
+            Auth::logout();
+            return response()->json(['error' => 'No token provided'], 401);
+        }
+
+        try {
+            JWTAuth::setToken($token)->invalidate();
+
+            Auth::logout();
+
+            return response()->json([
+                'token' => $token,
+                'redirect' => RouteServiceProvider::HOME
+            ]);
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Failed to logout'], 500);
+        }
     }
+
 }

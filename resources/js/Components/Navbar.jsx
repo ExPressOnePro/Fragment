@@ -5,6 +5,23 @@ import NavLink from "@/Components/NavLink.jsx";
 import Dropdown from "@/Components/Dropdown.jsx";
 import ResponsiveNavLink from "@/Components/ResponsiveNavLink.jsx";
 
+const handleLogout = async (e) => {
+    e.preventDefault();
+
+    try {
+        await axios.post('/logout', {}, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+
+        localStorage.removeItem('token'); // Удаление токена из localStorage
+        window.location.reload(); // Обновление страницы
+    } catch (error) {
+        console.error('Logout failed:', error.response?.data || error.message);
+    }
+};
+
 export default function Navbar({ user }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
 
@@ -61,7 +78,7 @@ export default function Navbar({ user }) {
 
                                     <Dropdown.Content>
                                         <Dropdown.Link href={route('profile.edit')}>Profile</Dropdown.Link>
-                                        <Dropdown.Link href={route('logout')} method="post" as="button">
+                                        <Dropdown.Link onClick={handleLogout} as="button">
                                             Log Out
                                         </Dropdown.Link>
                                     </Dropdown.Content>

@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Shop\CartController;
 use App\Http\Controllers\Shop\CategoryController;
 use App\Http\Controllers\Shop\OrderController;
 use App\Http\Controllers\Shop\ProductController;
 use App\Http\Controllers\Shop\ReviewController;
+use App\Http\Controllers\LogController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -21,6 +23,7 @@ use Illuminate\Validation\ValidationException;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+Route::post('/logs', [LogController::class, 'store']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -28,6 +31,10 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 
 Route::middleware('auth:api')->group(function () {
+
+    Route::get('/admin/categories', [CategoryController::class, 'index']);
+    Route::post('/admin/categories', [CategoryController::class, 'store']);
+
     Route::get('/admin/products/{id}', [ProductController::class, 'show']);
     Route::get('/admin/products', [ProductController::class, 'index']);
     Route::post('/admin/products', [ProductController::class, 'store']);

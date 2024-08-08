@@ -4,6 +4,8 @@ namespace App\Http\Middleware;
 
 use Illuminate\Auth\Middleware\Authenticate as Middleware;
 use Illuminate\Http\Request;
+use Tymon\JWTAuth\Exceptions\JWTException;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class Authenticate extends Middleware
 {
@@ -12,6 +14,34 @@ class Authenticate extends Middleware
      */
     protected function redirectTo(Request $request): ?string
     {
-        return $request->expectsJson() ? null : route('login');
+        if (!$request->expectsJson()) {
+            if (!$this->isAuthenticated($request)) {
+                return route('login');
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Check if the request has a valid JWT token and if the user is authenticated.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return bool
+     */
+    private function isAuthenticated(Request $request): bool
+    {
+        try {
+            $token = $request->bearerToken();
+            if ($token) {
+                JWTAuth::setToken($token)->authenticate();
+                return true;
+            }
+        } catch (JWTException $e) {
+            // Токен невалиден или произошла ошибка
+            return false;
+        }
+
+        return false;
     }
 }

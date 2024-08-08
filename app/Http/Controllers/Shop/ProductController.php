@@ -6,10 +6,16 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Inertia\Inertia;
 
 class ProductController extends Controller
 {
     // Получение списка продуктов
+    public function AdminCreateProduct()
+    {
+        return Inertia::render('Admin/ProductForm');
+    }
+
     public function index(Request $request)
     {
         $sortOrder = $request->query('sortOrder', 'desc'); // По умолчанию 'desc'
@@ -39,6 +45,11 @@ class ProductController extends Controller
             'category_id' => 'required|exists:categories,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Условие для изображения
         ]);
+
+        $existingProduct = Product::where('name', $request->name)->first();
+        if ($existingProduct) {
+            return response()->json(['error' => 'Product already exists'], 409);
+        }
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
